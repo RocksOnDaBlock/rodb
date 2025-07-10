@@ -456,16 +456,120 @@
     </div>
     
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    
-    <script>
-        // Show content based on menu selection
-        function showContent(section) {
-            document.querySelectorAll('.content').forEach(el => {
-                el.style.display = 'none';
+    <script type="module">
+        // Import the functions you need from the SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-analytics.js";
+        import { getDatabase, ref, set, push, onValue, get, increment } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-database.js";
+        
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAEegeZLnxxKrAGTMHJdlzupKbsisLt_KM",
+            authDomain: "rodb-d873c.firebaseapp.com",
+            projectId: "rodb-d873c",
+            storageBucket: "rodb-d873c.firebasestorage.app",
+            messagingSenderId: "221803595757",
+            appId: "1:221803595757:web:f4f64ddcc7bcc1146489e4",
+            measurementId: "G-6ZL7G7PZ66",
+            databaseURL: "https://rodb-d873c-default-rtdb.firebaseio.com" // Add this line for Realtime Database
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const database = getDatabase(app);
+        
+        // Initialize visitor counter
+        function initVisitorCounter() {
+            const counterRef = ref(database, 'visitorCount');
+            
+            // Get current count
+            get(counterRef).then((snapshot) => {
+                let count = snapshot.exists() ? snapshot.val() : 0;
+                
+                // Increment count
+                count++;
+                set(counterRef, count);
+                
+                // Update counter display
+                document.getElementById('visitor-count').textContent = count.toString().padStart(6, '0');
+            }).catch((error) => {
+                console.error("Error getting visitor count:", error);
+                document.getElementById('visitor-count').textContent = "000042";
             });
-            document.getElementById('content-' + section).style.display = 'block';
+        }
+        
+        // Initialize guestbook
+        function initGuestbook() {
+            const messagesRef = ref(database, 'guestbookMessages');
+            const guestbookForm = document.getElementById('guestbook-form');
+            const messagesContainer = document.getElementById('guestbook-messages');
+            
+            // Load existing messages
+            onValue(messagesRef, (snapshot) => {
+                const messages = snapshot.val() || {};
+                messagesContainer.innerHTML = '';
+                
+                const messageEntries = Object.entries(messages).sort((a, b) => b[1].timestamp - a[1].timestamp);
+                
+                if (messageEntries.length === 0) {
+                    messagesContainer.innerHTML = '<p>No messages yet. Be the first to sign!</p>';
+                    return;
+                }
+                
+                messageEntries.forEach(([id, message]) => {
+                    const messageEl = document.createElement('div');
+                    messageEl.className = 'message';
+                    
+                    const dateObj = new Date(message.timestamp);
+                    const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
+                    
+                    messageEl.innerHTML = `
+                        <div class="message-header">
+                            <span>${message.name}</span>
+                            <span>${formattedDate}</span>
+                        </div>
+                        <div class="message-content">${message.message}</div>
+                    `;
+                    
+                    messagesContainer.appendChild(messageEl);
+                });
+            }, (error) => {
+                console.error("Error loading messages:", error);
+                messagesContainer.innerHTML = '<p>Error loading guestbook entries. Please try again later.</p>';
+            });
+            
+            // Handle form submission
+            guestbookForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const nameInput = document.getElementById('name-input');
+                const messageInput = document.getElementById('message-input');
+                
+                const name = nameInput.value.trim();
+                const message = messageInput.value.trim();
+                
+                if (name && message) {
+                    // Create a new message reference
+                    const newMessageRef = push(messagesRef);
+                    
+                    // Set the data
+                    set(newMessageRef, {
+                        name: name,
+                        message: message,
+                        timestamp: Date.now()
+                    }).then(() => {
+                        // Clear form
+                        nameInput.value = '';
+                        messageInput.value = '';
+                        
+                        alert('Thanks for signing my guestbook!');
+                    }).catch((error) => {
+                        console.error("Error adding message:", error);
+                        alert('There was an error submitting your message. Please try again.');
+                    });
+                }
+            });
         }
         
         // Create floating pixels
@@ -485,118 +589,19 @@
             }
         }
         
-        // Initialize Firebase
-        function initFirebase() {
-            // Replace with your Firebase config
-            const firebaseConfig = {
-                apiKey: "YOUR_API_KEY",
-                authDomain: "YOUR_AUTH_DOMAIN",
-                databaseURL: "YOUR_DATABASE_URL",
-                projectId: "YOUR_PROJECT_ID",
-                storageBucket: "YOUR_STORAGE_BUCKET",
-                messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-                appId: "YOUR_APP_ID"
-            };
-            
-            // Initialize Firebase
-            firebase.initializeApp(firebaseConfig);
-            
-            // Initialize Firebase features
-            initVisitorCounter();
-            initGuestbook();
-        }
-        
-        // Initialize visitor counter
-        function initVisitorCounter() {
-            const counterRef = firebase.database().ref('visitorCount');
-            
-            // Get current count
-            counterRef.once('value', (snapshot) => {
-                let count = snapshot.val() || 0;
-                
-                // Increment count
-                count++;
-                counterRef.set(count);
-                
-                // Update counter display
-                document.getElementById('visitor-count').textContent = count.toString().padStart(6, '0');
+        // Show content based on menu selection
+        window.showContent = function(section) {
+            document.querySelectorAll('.content').forEach(el => {
+                el.style.display = 'none';
             });
-        }
+            document.getElementById('content-' + section).style.display = 'block';
+        };
         
-        // Initialize guestbook
-        function initGuestbook() {
-            const messagesRef = firebase.database().ref('guestbookMessages');
-            const guestbookForm = document.getElementById('guestbook-form');
-            const messagesContainer = document.getElementById('guestbook-messages');
-            
-            // Load existing messages
-            messagesRef.on('value', (snapshot) => {
-                const messages = snapshot.val() || {};
-                messagesContainer.innerHTML = '';
-                
-                const messageIds = Object.keys(messages).reverse();
-                
-                if (messageIds.length === 0) {
-                    messagesContainer.innerHTML = '<p>No messages yet. Be the first to sign!</p>';
-                    return;
-                }
-                
-                messageIds.forEach((id) => {
-                    const message = messages[id];
-                    const messageEl = document.createElement('div');
-                    messageEl.className = 'message';
-                    
-                    const dateObj = new Date(message.timestamp);
-                    const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
-                    
-                    messageEl.innerHTML = `
-                        <div class="message-header">
-                            <span>${message.name}</span>
-                            <span>${formattedDate}</span>
-                        </div>
-                        <div class="message-content">${message.message}</div>
-                    `;
-                    
-                    messagesContainer.appendChild(messageEl);
-                });
-            });
-            
-            // Handle form submission
-            guestbookForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                
-                const nameInput = document.getElementById('name-input');
-                const messageInput = document.getElementById('message-input');
-                
-                const name = nameInput.value.trim();
-                const message = messageInput.value.trim();
-                
-                if (name && message) {
-                    const newMessageRef = messagesRef.push();
-                    newMessageRef.set({
-                        name: name,
-                        message: message,
-                        timestamp: Date.now()
-                    });
-                    
-                    // Clear form
-                    nameInput.value = '';
-                    messageInput.value = '';
-                    
-                    alert('Thanks for signing my guestbook!');
-                }
-            });
-        }
-        
-        // Initialize
+        // Initialize everything when the page loads
         window.onload = function() {
             createPixels();
-            
-            // Uncomment this when you've set up Firebase
-            // initFirebase();
-            
-            // For now, just show a static visitor count
-            document.getElementById('visitor-count').textContent = '000042';
+            initVisitorCounter();
+            initGuestbook();
             
             // Add retro cursor trail effect
             document.addEventListener('mousemove', function(e) {
