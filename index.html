@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RocksOnDaBlock - Twitch Streamer</title>
+    <style>
+        body {
+            font-family: "Courier New", monospace;
+            background-color: #000;
+            color: #0f0;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><rect width='8' height='8' x='0' y='0' fill='lime' /></svg>"), auto;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 2px solid #0f0;
+            margin-top: 20px;
+            position: relative;
+            box-shadow: 0 0 20px #0f0;
+        }
+        
+        header {
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            text-shadow: 0 0 10px #0f0;
+            margin: 0;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 10px;
+            color: #0ff;
+        }
+        
+        .blink {
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        
+        .menu {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .menu-item {
+            background-color: #000;
+            color: #0f0;
+            border: 2px solid #0f0;
+            padding: 10px 20px;
+            margin: 5px;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .menu-item:hover {
+            background-color: #0f0;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #0f0;
+        }
+        
+        .content {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px dashed #0f0;
+            text-align: left;
+        }
+        
+        footer {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #0f0;
+            padding: 10px;
+        }
+        
+        .pixel {
+            font-size: 1.5rem;
+            position: absolute;
+            opacity: 0;
+            animation: float 15s linear infinite;
+        }
+        
+        @keyframes float {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-800px) rotate(360deg);
+            }
+        }
+        
+        .ascii-art {
+            font-family: monospace;
+            white-space: pre;
+            line-height: 1.2;
+            font-size: 12px;
+            color: #0f0;
+            margin: 20px auto;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        
+        .counter {
+            margin-top: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .marquee {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            border-top: 1px solid #0f0;
+            border-bottom: 1px solid #0f0;
+            padding: 10px 0;
+            margin: 20px 0;
+        }
+        
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 15s linear infinite;
+        }
+        
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                margin: 10px;
+                padding: 10px;
+            }
+            
+            .ascii-art {
+                font-size: 8px;
+            }
+        }
+        
+        .guestbook {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .guestbook input, .guestbook textarea {
+            background-color: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 8px;
+            margin: 5px;
+            width: 80%;
+            max-width: 400px;
+        }
+        
+        .guestbook button {
+            background-color: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 8px 15px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .guestbook button:hover {
+            background-color: #0f0;
+            color: #000;
+        }
+        
+        .under-construction {
+            display: inline-block;
+            margin: 20px 0;
+            padding: 10px;
+            border: 2px dashed #ff0;
+            color: #ff0;
+            animation: flash 2s infinite;
+        }
+        
+        @keyframes flash {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.5; }
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .social-link {
+            padding: 10px 15px;
+            background-color: #6441a5; /* Twitch purple */
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .social-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px #6441a5;
+        }
+        
+        .stream-schedule {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .schedule-day {
+            border: 1px solid #0f0;
+            padding: 10px;
+        }
+        
+        .schedule-day h4 {
+            margin-top: 0;
+            border-bottom: 1px dashed #0f0;
+            padding-bottom: 5px;
+        }
+        
+        #guestbook-messages {
+            text-align: left;
+            margin-top: 20px;
+            border-top: 1px dashed #0f0;
+            padding-top: 20px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dotted #0a0;
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .message-content {
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>RocksOnDaBlock <span class="blink">_</span></h1>
+            <h2>The most entertaining streams on the information superhighway!</h2>
+        </header>
+        
+        <div class="marquee">
+            <div class="marquee-content">
+                ★★★ WELCOME TO ROCKSONDABLOCK! ★★★ STREAM SCHEDULE BELOW! ★★★ DON'T FORGET TO FOLLOW AND SUBSCRIBE! ★★★ THANKS TO ALL MY SUPPORTERS! ★★★ BEST VIEWED WITH NETSCAPE NAVIGATOR 3.0 OR HIGHER! ★★★
+            </div>
+        </div>
+        
+        <div class="social-links">
+            <a href="https://twitch.tv/rocksondablock" target="_blank" class="social-link">
+                <span>📺</span> FOLLOW ME ON TWITCH!
+            </a>
+        </div>
+        
+        <nav class="menu">
+            <a class="menu-item" onclick="showContent('home')">HOME</a>
+            <a class="menu-item" onclick="showContent('about')">ABOUT ME</a>
+            <a class="menu-item" onclick="showContent('schedule')">STREAM SCHEDULE</a>
+            <a class="menu-item" onclick="showContent('clips')">TOP CLIPS</a>
+            <a class="menu-item" onclick="showContent('guestbook')">GUESTBOOK</a>
+        </nav>
+        
+        <div id="content-home" class="content">
+            <h3>Welcome to my radical website!</h3>
+            <div class="ascii-art">
+                  _____               _        _____         _____         ____  _            _    
+                 |  __ \             | |      / ____|       |  __ \       |  _ \| |          | |   
+                 | |__) |___   ___  | | _____| (___   ___  | |  | | __ _ | |_) | | ___   ___| | __
+                 |  _  // _ \ / __| | |/ / _ \\___ \ / _ \ | |  | |/ _` ||  _ <| |/ _ \ / __| |/ /
+                 | | \ \ (_) | (__ _|   < (_) |___) | (_) || |__| | (_| || |_) | | (_) | (__|   < 
+                 |_|  \_\___/ \___|_|_|\_\___/_____/ \___/ |_____/ \__,_||____/|_|\___/ \___|_|\_\
+            </div>
+            <p>Hey there, internet traveler! You've just stumbled upon the coolest Twitch streamer's personal website. I'm RocksOnDaBlock, your host for gaming adventures, tech talk, and digital shenanigans!</p>
+            <p>I've been streaming since the golden days of the internet, bringing you the most entertaining content this side of the information superhighway!</p>
+            
+            <div class="under-construction">
+                WEBSITE UNDER CONSTRUCTION - More radical content coming soon!
+            </div>
+            
+            <p>Don't forget to catch my next stream at <a href="https://twitch.tv/rocksondablock" target="_blank" style="color: #6441a5; font-weight: bold;">twitch.tv/rocksondablock</a>!</p>
+        </div>
+        
+        <div id="content-about" class="content" style="display: none;">
+            <h3>About RocksOnDaBlock</h3>
+            <p>Greetings, fellow internet denizen! I'm the one and only RocksOnDaBlock, your guide through the digital realm!</p>
+            <p>I started streaming back when dial-up modems were still making those sweet connection sounds. My passion for gaming, technology, and entertaining others led me to create this corner of the web.</p>
+            <p>When I'm not live on Twitch, you can find me:</p>
+            <ul>
+                <li>→ Upgrading my streaming setup with more RGB lights</li>
+                <li>→ Discovering obscure indie games</li>
+                <li>→ Collecting vintage computer hardware</li>
+                <li>→ Coding weird websites like this one!</li>
+            </ul>
+            <p>My streaming style is a mix of nostalgia, memes, and genuine gameplay. Whether you're here for the games or just to hang out in chat, you're always welcome!</p>
+            <p class="blink">STREAM STATS: 1337+ FOLLOWERS • 42 SUBSCRIBERS • 9000+ HOURS STREAMED</p>
+        </div>
+        
+        <div id="content-schedule" class="content" style="display: none;">
+            <h3>Stream Schedule</h3>
+            <p>Catch me live at these times! All times are in EST (Electronic Stream Time):</p>
+            
+            <div class="stream-schedule">
+                <div class="schedule-day">
+                    <h4>MONDAY</h4>
+                    <p>7PM - 10PM</p>
+                    <p>Retro Gaming</p>
+                </div>
+                <div class="schedule-day">
+                    <h4>TUESDAY</h4>
+                    <p>OFF DAY</p>
+                    <p>Recharging...</p>
+                </div>
+                <div class="schedule-day">
+                    <h4>WEDNESDAY</h4>
+                    <p>8PM - 11PM</p>
+                    <p>New Releases</p>
+                </div>
+                <div class="schedule-day">
+                    <h4>THURSDAY</h4>
+                    <p>7PM - 10PM</p>
+                    <p>Throwback Thursday</p>
+                </div>
+                <div class="schedule-day">
+                    <h4>FRIDAY</h4>
+                    <p>9PM - LATE</p>
+                    <p>Friday Night Frags</p>
+                </div>
+                <div class="schedule-day">
+                    <h4>WEEKEND</h4>
+                    <p>Random Times</p>
+                    <p>Special Events!</p>
+                </div>
+            </div>
+            
+            <p>Schedule subject to change based on game releases, tournaments, or sudden inspiration!</p>
+            <p>Get notified when I go live by following me on <a href="https://twitch.tv/rocksondablock" target="_blank" style="color: #6441a5; font-weight: bold;">Twitch</a>!</p>
+        </div>
+        
+        <div id="content-clips" class="content" style="display: none;">
+            <h3>Top Stream Clips</h3>
+            <p>Check out these epic gaming moments from my streams!</p>
+            
+            <div class="under-construction">
+                CLIPS LOADING... Your 56k modem is working hard!
+            </div>
+            
+            <div class="ascii-art">
+                  ┌─────────────┐
+                  │             │
+                  │   GAMING    │
+                  │   MOMENT    │
+                  │             │
+                  │    [▶]      │
+                  │             │
+                  └─────────────┘
+                  
+                  ┌─────────────┐
+                  │             │
+                  │   EPIC      │
+                  │   WIN       │
+                  │             │
+                  │    [▶]      │
+                  │             │
+                  └─────────────┘
+                  
+                  ┌─────────────┐
+                  │             │
+                  │   FUNNY     │
+                  │   FAIL      │
+                  │             │
+                  │    [▶]      │
+                  │             │
+                  └─────────────┘
+            </div>
+            
+            <p>Coming soon: Embedded Twitch clips! Check back in 4-6 weeks or after my next major stream!</p>
+        </div>
+        
+        <div id="content-guestbook" class="content" style="display: none;">
+            <h3>Sign My Guestbook!</h3>
+            <p>Let me know you stopped by! Your message will appear below after submission.</p>
+            
+            <div class="guestbook">
+                <form id="guestbook-form">
+                    <div>
+                        <input type="text" id="name-input" placeholder="Your Name" required>
+                    </div>
+                    <div>
+                        <textarea id="message-input" placeholder="Your Message" rows="4" required></textarea>
+                    </div>
+                    <div>
+                        <button type="submit">SUBMIT</button>
+                    </div>
+                </form>
+                
+                <div id="guestbook-messages">
+                    <!-- Messages will be loaded here from Firebase -->
+                    <p>Loading guestbook entries...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="pixel-container"></div>
+        
+        <footer>
+            <div>© 1997-2025 RocksOnDaBlock - All Rights Reserved</div>
+            <div>Best viewed with Netscape Navigator at 800x600 resolution</div>
+            <div class="counter">
+                You are visitor number: <span id="visitor-count">Loading...</span>
+            </div>
+            <div style="margin-top: 10px;">
+                <a href="https://twitch.tv/rocksondablock" target="_blank" style="color: #6441a5; font-weight: bold;">WATCH ME ON TWITCH</a> | 
+                <a href="#" style="color: #0f0;">Contact</a> | 
+                <a href="#" style="color: #0f0;">Privacy Policy</a>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <script>
+        // Show content based on menu selection
+        function showContent(section) {
+            document.querySelectorAll('.content').forEach(el => {
+                el.style.display = 'none';
+            });
+            document.getElementById('content-' + section).style.display = 'block';
+        }
+        
+        // Create floating pixels
+        function createPixels() {
+            const pixelContainer = document.getElementById('pixel-container');
+            const pixels = ['🎮', '🕹️', '💻', '🎧', '🎬', '✨', '🔥'];
+            
+            for (let i = 0; i < 10; i++) {
+                const pixel = document.createElement('div');
+                pixel.className = 'pixel';
+                pixel.textContent = pixels[Math.floor(Math.random() * pixels.length)];
+                pixel.style.left = Math.random() * 100 + '%';
+                pixel.style.bottom = '0';
+                pixel.style.animationDuration = (10 + Math.random() * 20) + 's';
+                pixel.style.animationDelay = (Math.random() * 5) + 's';
+                pixelContainer.appendChild(pixel);
+            }
+        }
+        
+        // Initialize Firebase
+        function initFirebase() {
+            // Replace with your Firebase config
+            const firebaseConfig = {
+                apiKey: "YOUR_API_KEY",
+                authDomain: "YOUR_AUTH_DOMAIN",
+                databaseURL: "YOUR_DATABASE_URL",
+                projectId: "YOUR_PROJECT_ID",
+                storageBucket: "YOUR_STORAGE_BUCKET",
+                messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+                appId: "YOUR_APP_ID"
+            };
+            
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            
+            // Initialize Firebase features
+            initVisitorCounter();
+            initGuestbook();
+        }
+        
+        // Initialize visitor counter
+        function initVisitorCounter() {
+            const counterRef = firebase.database().ref('visitorCount');
+            
+            // Get current count
+            counterRef.once('value', (snapshot) => {
+                let count = snapshot.val() || 0;
+                
+                // Increment count
+                count++;
+                counterRef.set(count);
+                
+                // Update counter display
+                document.getElementById('visitor-count').textContent = count.toString().padStart(6, '0');
+            });
+        }
+        
+        // Initialize guestbook
+        function initGuestbook() {
+            const messagesRef = firebase.database().ref('guestbookMessages');
+            const guestbookForm = document.getElementById('guestbook-form');
+            const messagesContainer = document.getElementById('guestbook-messages');
+            
+            // Load existing messages
+            messagesRef.on('value', (snapshot) => {
+                const messages = snapshot.val() || {};
+                messagesContainer.innerHTML = '';
+                
+                const messageIds = Object.keys(messages).reverse();
+                
+                if (messageIds.length === 0) {
+                    messagesContainer.innerHTML = '<p>No messages yet. Be the first to sign!</p>';
+                    return;
+                }
+                
+                messageIds.forEach((id) => {
+                    const message = messages[id];
+                    const messageEl = document.createElement('div');
+                    messageEl.className = 'message';
+                    
+                    const dateObj = new Date(message.timestamp);
+                    const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
+                    
+                    messageEl.innerHTML = `
+                        <div class="message-header">
+                            <span>${message.name}</span>
+                            <span>${formattedDate}</span>
+                        </div>
+                        <div class="message-content">${message.message}</div>
+                    `;
+                    
+                    messagesContainer.appendChild(messageEl);
+                });
+            });
+            
+            // Handle form submission
+            guestbookForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const nameInput = document.getElementById('name-input');
+                const messageInput = document.getElementById('message-input');
+                
+                const name = nameInput.value.trim();
+                const message = messageInput.value.trim();
+                
+                if (name && message) {
+                    const newMessageRef = messagesRef.push();
+                    newMessageRef.set({
+                        name: name,
+                        message: message,
+                        timestamp: Date.now()
+                    });
+                    
+                    // Clear form
+                    nameInput.value = '';
+                    messageInput.value = '';
+                    
+                    alert('Thanks for signing my guestbook!');
+                }
+            });
+        }
+        
+        // Initialize
+        window.onload = function() {
+            createPixels();
+            
+            // Uncomment this when you've set up Firebase
+            // initFirebase();
+            
+            // For now, just show a static visitor count
+            document.getElementById('visitor-count').textContent = '000042';
+            
+            // Add retro cursor trail effect
+            document.addEventListener('mousemove', function(e) {
+                const trail = document.createElement('div');
+                trail.className = 'pixel';
+                trail.style.left = e.pageX + 'px';
+                trail.style.top = e.pageY + 'px';
+                trail.style.fontSize = '8px';
+                trail.textContent = '*';
+                trail.style.position = 'absolute';
+                trail.style.pointerEvents = 'none';
+                trail.style.opacity = '1';
+                trail.style.animation = 'none';
+                document.body.appendChild(trail);
+                
+                setTimeout(function() {
+                    trail.style.transition = 'opacity 0.5s';
+                    trail.style.opacity = '0';
+                    setTimeout(function() {
+                        document.body.removeChild(trail);
+                    }, 500);
+                }, 100);
+            });
+        };
+    </script>
+</body>
+</html>
